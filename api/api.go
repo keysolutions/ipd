@@ -260,5 +260,16 @@ func (a *API) Router() http.Handler {
 	// Not found handler which returns JSON when appropriate
 	r.NotFoundHandler = appHandler(a.NotFoundHandler)
 
-	return r
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		a.logHeaders(req)
+		r.ServeHTTP(w, req)
+	})
+}
+
+func (a *API) logHeaders(r *http.Request) {
+	h := []string{}
+	for k, v := range r.Header {
+		h = append(h, k+"="+strings.Join(v, "|"))
+	}
+	a.log.Debug("Headers: ", strings.Join(h, ", "))
 }
